@@ -1,0 +1,65 @@
+/**
+ * Created by alexcosta on 02/11/16.
+ */
+
+var Cargo = require('../models/Cargos');
+
+exports.index = function(req, res){
+
+    if(req.params.cargo_id){
+        new Cargo({id:req.params.cargo_id})
+            .fetch()
+            .then(function(cargo) {
+                if(cargo){
+                    res.json(cargo);
+                }else{
+                    res.status(404).json({error: "Cargo não encontrado."});
+                }
+            }).catch(function(err) {
+                res.status(500).json({error: err});
+            });
+    }else{
+        Cargo.fetchPage({
+            pageSize: 1,
+            page: 1
+        })
+        .then(function(results) {
+
+            console.log(results.models);
+
+            res.json(results);
+        }).catch(function(err) {
+            res.status(500).json({error: err});
+        });
+    }
+}
+
+exports.save = function(req, res){
+    new Cargo(req.body)
+        .save()
+        .then(function(cargo) {
+            res.json({ message: 'Você salvou o Cargo: ' + cargo.attributes.nome});
+        }).catch(function(err) {
+            res.status(500).json({error: err});
+        });
+}
+
+exports.edit = function(req, res) {
+    new Cargo({id:req.params.cargo_id, nome:req.body.nome})
+        .save()
+        .then(function(cargo) {
+            res.json({ message: 'Você alterou o Cargo: ' + cargo.attributes.nome});
+        }).catch(function(err) {
+            res.status(500).json({error: err});
+        });
+}
+
+exports.delete = function(req, res) {
+    new Cargo({id:req.params.cargo_id})
+        .destroy({require:true})
+        .then(function(model) {
+            res.json({ message: 'Você Exclui o Cargo'});
+        }).catch(function(err) {
+            res.status(500).json({error: err});
+        });
+}
